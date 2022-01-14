@@ -1,8 +1,25 @@
 const config = require('./config.json');
 const io = require('socket.io-client');
-const { RTCPeerConnection } = require('wrtc');
+const { RTCPeerConnection, MediaStreamTrack } = require('wrtc');
+const spawn = require('child_process').spawn;
 
 const SERVER_URI = 'https://rtc-pi-server.herokuapp.com';
+
+const child = spawn('/opt/vc/bin/raspivid', [
+  '-hf',
+  '-w',
+  '1280',
+  '-h',
+  '1024',
+  '-t',
+  '999999999',
+  '-fps',
+  '20',
+  '-b',
+  '5000000',
+  '-o',
+  '-',
+]);
 
 const map = new Map();
 
@@ -19,6 +36,10 @@ socket.on('get-offer-from-camera', userId => {
   console.log('get-offer-from-camera', userId);
   const connection = new RTCPeerConnection();
   map.set(userId, connection);
+
+  // nonstandard.
+
+  connection.addTrack(new MediaStreamTrack(), child.stdout);
 
   let localDescription;
   connection.addEventListener('icecandidate', event => {
