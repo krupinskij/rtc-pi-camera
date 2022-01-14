@@ -38,13 +38,15 @@ socket.on('get-offer-from-camera', userId => {
   const connection = new RTCPeerConnection();
   map.set(userId, connection);
 
-  const source = new RTCVideoSource();
-  const track = source.createTrack();
-  const transceiver = peerConnection.addTransceiver(track);
-  const sink = new RTCVideoSink(transceiver.receiver.track);
+  const dc = connection.createDataChannel();
+
+  // const source = new RTCVideoSource();
+  // const track = source.createTrack();
+  // const transceiver = peerConnection.addTransceiver(track);
+  // const sink = new RTCVideoSink(transceiver.receiver.track);
 
   child.stdout.on('data', chunk => {
-    source.onFrame(chunk);
+    dc.sendChannel(chunk);
   });
 
   let localDescription;
