@@ -1,7 +1,8 @@
 const config = require('./config.json');
 const io = require('socket.io-client');
-const { RTCPeerConnection, MediaStreamTrack } = require('wrtc');
-const spawn = require('child_process').spawn;
+const { spawn } = require('child_process');
+const { RTCPeerConnection, nonstandard } = require('wrtc');
+const { RTCVideoSink, RTCVideoSource } = nonstandard;
 
 const SERVER_URI = 'https://rtc-pi-server.herokuapp.com';
 
@@ -37,9 +38,14 @@ socket.on('get-offer-from-camera', userId => {
   const connection = new RTCPeerConnection();
   map.set(userId, connection);
 
-  // nonstandard.
+  const source = new RTCVideoSource();
+  const track = source.createTrack();
+  const transceiver = peerConnection.addTransceiver(track);
+  const sink = new RTCVideoSink(transceiver.receiver.track);
 
-  connection.addTrack(new MediaStreamTrack(), child.stdout);
+  child.stdout.on('data', chunk => {
+    source.onFrame(chunk);
+  });
 
   let localDescription;
   connection.addEventListener('icecandidate', event => {
