@@ -1,8 +1,8 @@
 const config = require('./config.json');
 const io = require('socket.io-client');
-const wrtc = require('wrtc');
+const { RTCPeerConnection } = require('wrtc');
 
-const SERVER_URI = 'http://localhost:3030/';
+const SERVER_URI = 'https://rtc-pi-server.herokuapp.com';
 
 const map = new Map();
 
@@ -17,8 +17,9 @@ socket.on('connect', () => {
 
 socket.on('get-offer-from-camera', userId => {
   console.log('get-offer-from-camera', userId);
-  const connection = new wrtc.RTCPeerConnection();
+  const connection = new RTCPeerConnection();
   map.set(userId, connection);
+
   let localDescription;
   connection.addEventListener('icecandidate', event => {
     console.log('new ice candidate');
